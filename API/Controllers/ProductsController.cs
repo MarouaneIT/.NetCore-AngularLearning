@@ -58,7 +58,8 @@ namespace API.Controllers
         {
             var spec = new ProductWithTypeAndBrandsSpecification(id);
             var product = await productRepo.GetEntityWithSpec(spec);
-           // var test = product.Name; //Test for exeptionMiddleware
+            if (product == null) return NotFound(new ApiResponse(404));
+            // var test = product.Name; //Test for exeptionMiddleware
             return Ok(_mapper.Map<Product,ProductToReturnDto>(product));
         }
 
