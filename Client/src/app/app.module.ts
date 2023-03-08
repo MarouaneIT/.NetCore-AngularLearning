@@ -8,6 +8,8 @@ import { CoreModule } from './core/core.module';
 import { ShopRoutingModule } from './shop/shop-routing.module';
 import { HomeModule } from './home/home.module';
 import { ErrorInterceptor } from './core/interceptors/error.interceptor';
+import { BreadcrumbModule } from 'xng-breadcrumb';
+import { LoadingInterceptor } from './core/interceptors/loading.interceptor';
 
 @NgModule({
   declarations: [
@@ -24,7 +26,8 @@ import { ErrorInterceptor } from './core/interceptors/error.interceptor';
   
   ],
   providers: [
-   {provide:HTTP_INTERCEPTORS,useClass:ErrorInterceptor,multi:true}
+   {provide:HTTP_INTERCEPTORS,useClass:ErrorInterceptor,multi:true},
+   {provide:HTTP_INTERCEPTORS,useClass:LoadingInterceptor,multi:true}
   ],
   bootstrap: [AppComponent]
 })
