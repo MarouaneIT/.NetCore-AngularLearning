@@ -4,11 +4,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using API;
 using API.Errors;
+using API.Extensions;
 using API.Middleware;
+using Core.Entities.Identity;
 using Core.Interfaces;
 using Infrastructure.Data;
+using Infrastructure.Data.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -21,52 +25,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 //add builder.Services to container
 
-builder.Services.AddControllers();
-builder.Services.AddDbContext<StoreContext>(x =>
-{
-    x.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
-});
+builder.Services.AddApplicationServices(builder.Configuration);
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(c =>
-{
-    var options = ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("Redis"));
-    return ConnectionMultiplexer.Connect(options);
-});
-
-builder.Services.AddScoped<IBasketRepositoty, BasketRepositoty>();
-builder.Services.AddScoped<IProductRepository,ProductRepository>();
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-builder.Services.AddSwaggerGen();
-builder.Services.Configure<ApiBehaviorOptions>(options =>
-{
-    options.InvalidModelStateResponseFactory = actionContext =>
-    {
-        var errors = actionContext.ModelState
-        .Where(x => x.Value.Errors.Count > 0)
-        .SelectMany(x => x.Value.Errors)
-        .Select(x => x.ErrorMessage).ToArray();
-
-        var errorResponse = new ApiValidationErrorResponse
-        {
-            Errors = errors
-        };
-        return new BadRequestObjectResult(errorResponse);
-    };
-});
-
-builder.Services.AddCors(opt =>
-{
-    opt.AddPolicy("CorsPolicy", policy =>
-    {
-        policy.AllowAnyHeader().AllowAnyMethod().WithOrigins("http://localhost:4200");
-    });
-});
-
-
-//configure the http request pipeline
+builder.Services.AddIdentityService(builder.Configuration);
 
 var app = builder.Build();
+
+//configure the http request pipeline
 
 app.UseMiddleware<ExeptionMiddleware>();
 
@@ -84,13 +49,12 @@ app.UseHttpsRedirection();
 
 app.UseCors("CorsPolicy");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseStaticFiles();
 
-
 app.MapControllers();
-
 
 using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
@@ -99,7 +63,12 @@ try
 {
 
     var context = services.GetRequiredService<StoreContext>();
+    var identityContext = services.GetRequiredService<AppIdentityDbContext>();
+    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+
     await context.Database.MigrateAsync();
+    await identityContext.Database.MigrateAsync();
+    await AppIdentityDbContextSeed.SeedUsersAsync(userManager);
     await SeedDataContext.SeedAsync(context, loggerFactory);
 
 }
@@ -108,7 +77,6 @@ catch (Exception ex)
     var logger = loggerFactory.CreateLogger<Program>();
     logger.LogError(ex, "Error logged during migration");
 }
-
 
 await app.RunAsync();
 

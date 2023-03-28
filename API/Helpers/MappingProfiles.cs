@@ -1,6 +1,7 @@
 ﻿using API.Dtos;
 using AutoMapper;
 using Core.Entities;
+using Core.Entities.Identity;
 using System.Security.Cryptography.X509Certificates;
 
 namespace API.Helpers
@@ -13,7 +14,8 @@ namespace API.Helpers
                 .ForMember(x => x.ProductBrand, op => op.MapFrom(x => x.ProductBrand.Name))
                 .ForMember(x => x.ProductType, op => op.MapFrom(x => x.ProductType.Name))
                 .ForMember(x=>x.PictureUrl,op=>op.MapFrom<ProductUrlResolver>());
-                
+
+            CreateMap<Address, AddressDto>().ReverseMap();              
         }
     }
 }

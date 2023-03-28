@@ -13,12 +13,19 @@ namespace API.Controllers
             _context = context;
         }
 
-       /* [HttpGet("testauth")]
+        /* [HttpGet("testauth")]
+         [Authorize]
+         public ActionResult<string> GetSecretText()
+         {
+             return "secret stuff";
+         }*/
+
+        [HttpGet("testauth")]
         [Authorize]
-        public ActionResult<string> GetSecretText()
+        public ActionResult<string> testAuth()
         {
-            return "secret stuff";
-        }*/
+            return "stuff to do";
+        }
 
         [HttpGet("notfound")]
         public ActionResult GetNotFoundRequest()
