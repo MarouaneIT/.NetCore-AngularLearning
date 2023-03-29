@@ -26,8 +26,8 @@ var builder = WebApplication.CreateBuilder(args);
 //add builder.Services to container
 
 builder.Services.AddApplicationServices(builder.Configuration);
-
 builder.Services.AddIdentityService(builder.Configuration);
+builder.Services.AddSwaggerDocumentation();
 
 var app = builder.Build();
 
@@ -40,8 +40,7 @@ app.UseStatusCodePagesWithReExecute("/errors/{0}");
 if (builder.Environment.IsDevelopment())
 {
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
+   
     // app.UseDeveloperExceptionPage();
 }
 
@@ -50,7 +49,10 @@ app.UseHttpsRedirection();
 app.UseCors("CorsPolicy");
 
 app.UseAuthentication();
+
 app.UseAuthorization();
+
+app.UseSwaggerDocumentation();
 
 app.UseStaticFiles();
 

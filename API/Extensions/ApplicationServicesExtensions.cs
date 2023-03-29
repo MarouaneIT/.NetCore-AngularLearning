@@ -33,7 +33,9 @@ namespace API.Extensions
             Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             Services.AddScoped<ITokenService, TokenService>();
             Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-            Services.AddSwaggerGen();
+           
+
+            //For Validation errors
             Services.Configure<ApiBehaviorOptions>(options =>
             {
                 options.InvalidModelStateResponseFactory = actionContext =>
