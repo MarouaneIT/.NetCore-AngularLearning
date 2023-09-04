@@ -23,20 +23,16 @@ export class ErrorInterceptor implements HttpInterceptor {
       catchError((error:HttpErrorResponse)=>{
        if(error)
        { 
-         if(error.status===401)
-         {
-          this.toast.error(error.error.message,error.status.toString());
-         }
         if(error.status===400)
         {
-            if(error.error.errors)
+          if(error.error.errors)
+        {
+          throw error.error;
+        }
+        else
           {
-            throw error.error;
+            this.toast.error(error.error.message,error.status.toString());
           }
-          else
-            {
-              this.toast.error(error.error.message,error.status.toString());
-            }
         }
          if(error.status===404)
          {
