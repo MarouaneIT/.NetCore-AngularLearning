@@ -1,4 +1,5 @@
 ﻿using Core.Entities;
+using Core.Entities.OrderAggregate;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -50,7 +51,18 @@ namespace Infrastructure.Data
                                    
                 }
 
-                if(context.ChangeTracker.HasChanges())
+                if (!context.DeliveryMethods.Any())
+                {
+                    var productsData =
+                        File.ReadAllText("../Infrastructure/Data/SeedData/delivery.json");
+
+                    var methods = JsonSerializer.Deserialize<List<DeliveryMethod>>(productsData);
+
+                    context.DeliveryMethods.AddRange(methods);
+
+                }
+
+                if (context.ChangeTracker.HasChanges())
                 {
                     await context.SaveChangesAsync();
                 }

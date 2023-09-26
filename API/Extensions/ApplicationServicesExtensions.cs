@@ -28,6 +28,8 @@ namespace API.Extensions
                 return ConnectionMultiplexer.Connect(options);
             });
 
+            Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            Services.AddScoped<IOrderService,OderService>();
             Services.AddScoped<IBasketRepositoty, BasketRepositoty>();
             Services.AddScoped<IProductRepository, ProductRepository>();
             Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
