@@ -2,3 +2,5 @@ obj
 bin
 *.db
 appsettings.json
+/API/identity.db-shm
+/API/identity.db-wal

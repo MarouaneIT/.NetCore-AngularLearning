@@ -4,6 +4,8 @@ import { BehaviorSubject } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { Basket, BasketItem, BasketTotal } from '../shared/models/basket';
 import { Product } from '../shared/models/Product';
+import { DeliveryMethod } from '../shared/models/DeliveryMethod';
+import { PaymentComponent } from '../checkout/payment/payment.component';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +19,15 @@ import { Product } from '../shared/models/Product';
   private basketTotalSource = new BehaviorSubject<BasketTotal | null>(null);
   basketTotalSource$ = this.basketTotalSource.asObservable();
 
+  shipping = 0;
+
   constructor(private httpclient:HttpClient) { }
+
+  setshippingPrice(deliveryMethod:DeliveryMethod)
+  {
+    this.shipping = deliveryMethod.price;
+    this.calculateTotal();
+  }
 
   getBasket(id:string){   
     this.httpclient.get<Basket>(this.baseUrl+'basket?id='+id).subscribe({
@@ -74,12 +84,17 @@ import { Product } from '../shared/models/Product';
      return this.httpclient.delete(this.baseUrl+'basket?id='+basket.id).subscribe({
       next:()=>
       {
-        this.basketSource.next(null);
-        this.basketTotalSource.next(null);
-        localStorage.removeItem('basket_id');
+         this.deleteLocalBasket();
       }
      })
 
+  }
+
+  deleteLocalBasket()
+  {
+    this.basketSource.next(null);
+    this.basketTotalSource.next(null);
+    localStorage.removeItem('basket_id');
   }
 
   private addOrUpdateItem(items:BasketItem[],itemToadd:BasketItem,quantity:number) : BasketItem[]
@@ -117,10 +132,9 @@ import { Product } from '../shared/models/Product';
    {
     const basket = this.getCurrentBasketValue();
     if(!basket) return;
-    const shipping = 0;
     const subTotal = basket.items.reduce((a,b)=>(b.price*b.quantity)+a,0);
-    const total = shipping+subTotal;
-    return this.basketTotalSource.next({shipping,subTotal,total})
+    const total = this.shipping+subTotal;
+    return this.basketTotalSource.next({shipping:this.shipping,subTotal,total})
    }
 
   private isProduct(item:Product | BasketItem) :item is Product
